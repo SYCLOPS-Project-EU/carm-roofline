@@ -10,6 +10,7 @@ else ifeq ($(arch),aarch64)
 else ifeq ($(arch),riscv64)
 	ASSEMBLY_FILE = Test/CoreClockCheckerRISCV.s
 	CFLAGS = -g -Wall -Wextra -Ofast -march=rv64g
+#CFLAGS = -g -Wall -Wextra -Ofast -march=rv64gcv0p7 -menable-experimental-extensions
 else
 	ASSEMBLY_FILE = Test/CoreClockChecker.s
     $(error Unsupported architecture: $(arch))
