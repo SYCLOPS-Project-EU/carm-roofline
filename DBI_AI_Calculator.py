@@ -19,8 +19,11 @@ import run
 #FP OPERATIONS
 x86_Scalar_fp_operations = {
     "vmulsd": {"count": 0, "string": "Scalar (1x 64 bit)", "factor": 1},
+    "mulsd": {"count": 0, "string": "Scalar (1x 64 bit)", "factor": 1},
     "vdivsd": {"count": 0, "string": "Scalar (1x 64 bit)", "factor": 1},
+    "divsd": {"count": 0, "string": "Scalar (1x 64 bit)", "factor": 1},
     "vaddsd": {"count": 0, "string": "Scalar (1x 64 bit)", "factor": 1},
+    "addsd": {"count": 0, "string": "Scalar (1x 64 bit)", "factor": 1},
     "vsubsd": {"count": 0, "string": "Scalar (1x 64 bit)", "factor": 1},
     "vfmadd132sd": {"count": 0, "string": "Scalar (2x 64 bit)", "factor": 2},
     "vfmadd231sd": {"count": 0, "string": "Scalar (2x 64 bit)", "factor": 2},
@@ -230,9 +233,12 @@ def runSDE(sde_path, roi, executable_path, additional_args):
         command = f"{sde_path}/sde64 -iform -mix -dyn_mask_profile -- {executable_path}"
 
     #Add additional arguments to the command
-    command += " " + " ".join(additional_args)
+    if additional_args != None:
+        command += " " + " ".join(additional_args)
     command_args = command.split()
-    print("Running Provided Application For Opcode Data")
+
+    print("------------------------------")
+    print("Running Provided Application For Opcode Data\n")
     
     try:
         subprocess.run(command_args, check=True)
@@ -249,9 +255,11 @@ def runDynamoRIO(dynamo_path, roi, executable_path, additional_args):
         command = f"{dynamo_path}/bin64/drrun -c ./build/bin/libopcoder.so -- {executable_path}"
 
     # Add additional arguments to the command
-    command += " " + " ".join(additional_args)
+    if additional_args != None:
+        command += " " + " ".join(additional_args)
     command_args = command.split()
-    print("Running Provided Application For Opcode Data")
+    print("------------------------------")
+    print("Running Provided Application For Opcode Data\n")
 
     try:
         subprocess.run(command_args, check=True)
@@ -264,9 +272,10 @@ def runDynamoRIO(dynamo_path, roi, executable_path, additional_args):
 def runApplication(roi, executable_path, additional_args):
 
     #Add additional arguments to the command
-    executable_path += " " + " ".join(additional_args)
-
-    print("Running Provided Application For Timming Data")
+    if additional_args != None:
+        executable_path += " " + " ".join(additional_args)
+    print("\n------------------------------")
+    print("Running Provided Application For Timming Data\n")
     if roi:
         try:
             subprocess.run(executable_path, check=True, shell=True)
@@ -591,6 +600,7 @@ def analyseDynamoRIOARM():
 
 def printDynamoRIOx86():
     global x
+    print("\n---------OPCODE BREAKDOWN-----------")
     print("Memory Operations:")
     for opcode, entries in memory_operations.items():
         total_entry_printed = False
@@ -743,8 +753,11 @@ def printDynamoRIOx86():
         if data > 0:
             print(f"{data:12} : {opcode}")
 
+    print("------------------------------")
+
 def printDynamoRIOARM():
-    print("\nMemory Operations:\n")
+    print("\n---------OPCODE BREAKDOWN-----------")
+    print("Memory Operations:\n")
     for opcode, entries in memory_operations.items():
         total_entry_printed = False
         for count, description in entries:
@@ -795,6 +808,7 @@ def printDynamoRIOARM():
     for opcode, data in sorted(misc_operations_sorted, key=lambda item: item[1], reverse=False):
         if data > 0:
             print(f"{data:12} : {opcode}")
+    print("------------------------------")
 
 def parse_title_line(line):
     parts = line.split()
@@ -1090,14 +1104,17 @@ if __name__ == "__main__":
     ai = float(fp_ops/memory_bytes)
     bandwidth = float((memory_bytes) / exec_time)
 
-    print("\nTotal FP operations:", fp_ops)
-    #print("Total integer operations:", integer_ops-fp_ops)
+    print("\n---------DBI RESULTS-----------")
+    print("Total FP operations:", fp_ops)
     print("Total memory bytes:", memory_bytes)
     if (not args.sde):
         print("Total integer operations:", integer_ops)
+
     print("\nExecution time (seconds):", time_taken_seconds)
-    print("GFLOPS:", gflops)
+    print("GFLOP/s:", gflops)
+    print("Bandwidth (GB/s): " + str(bandwidth))
     print("Arithmetic Intensity:", ai)
+    print("------------------------------")
 
     ct = datetime.datetime.now()
 
